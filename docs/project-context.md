@@ -80,7 +80,18 @@ Salesforce will eventually contain:
 - Opportunities,
 - and commercial lifecycle records where practical.
 
-## Current Salesforce Account Model
+## Salesforce Account Model — Implemented
+
+**Status: Implemented** (FieldPilot org + synthetic seed). This section is the authoritative Account field list. Do not document or recreate the superseded planned names `Account_Scope__c`, `Branch_Count__c`, `Customer_Segment__c`, or `Service_Vertical__c`.
+
+Architecture rules that are also implemented:
+
+- Hierarchy uses standard `Account.ParentId` (Business → Location).
+- Opportunities are created at the **Business** Account only.
+- `Customer_Id__c` is Business-only; `Location_Id__c` is Location-only.
+- `Revenue_Weight__c` is Location-level; `Customer_ARR__c` is primarily Business-level.
+- `NumberofLocations__c` is Business-level.
+- Do not store raw product telemetry in Salesforce.
 
 All FieldPilot sample records use:
 
@@ -90,7 +101,7 @@ Record Type:
 Record Type Id:
 `012g7000004KDoPAAW`
 
-### Standard / Repurposed Fields
+### Standard / Repurposed Fields (Implemented)
 
 `Account.Type`
 
@@ -105,11 +116,13 @@ For this project:
 - Business = parent commercial customer
 - Location = operating branch
 
+Supersedes the earlier planned custom field `Account_Scope__c`.
+
 `Account.ParentId`
 
 Used to connect Location Accounts to their parent Business Account.
 
-### Custom / Repurposed Fields
+### Custom / Repurposed Fields (Implemented)
 
 #### Customer_Id__c
 
@@ -151,6 +164,8 @@ Picklist:
 
 Used on Business and Location records.
 
+Supersedes the earlier planned name `Customer_Segment__c`.
+
 #### Service_Verticals__c
 
 Multi-select picklist.
@@ -165,6 +180,8 @@ Values:
 - Multi-Trade
 
 Salesforce multi-select CSV values use semicolon separators.
+
+Supersedes the earlier planned single-select `Service_Vertical__c`.
 
 #### Platform_Go_Live_Date__c
 
@@ -217,6 +234,8 @@ Location revenue weights should total approximately 100% per Business.
 
 Used later during hierarchy aggregation.
 
+Do not treat this as a Business-level field.
+
 #### Customer_Health_Score__c
 
 Number(3,0)
@@ -238,6 +257,8 @@ Current synthetic data may include:
 - Active
 - Opening
 
+Non-active locations are excluded from aggregation assumptions unless explicitly revisited.
+
 If additional picklist values are introduced, document them here.
 
 #### NumberofLocations__c
@@ -247,6 +268,17 @@ Number(3,0)
 Existing Salesforce field repurposed for the project.
 
 Business-level location count.
+
+Supersedes the earlier planned custom field `Branch_Count__c`.
+
+### Name mapping (stale → implemented)
+
+| Stale / planned (do not use) | Implemented |
+|------------------------------|-------------|
+| `Account_Scope__c` | `Account.Type` (`Business` / `Location` / `Other`) |
+| `Branch_Count__c` | `NumberofLocations__c` |
+| `Customer_Segment__c` | `Segment__c` |
+| `Service_Vertical__c` | `Service_Verticals__c` (multi-select) |
 
 ## Current Synthetic Account Dataset
 
@@ -278,9 +310,11 @@ Seed files:
 
 If these files are not stored in the repository, do not assume they are available locally.
 
-## Snowflake Role
+## Snowflake Role — Planned
 
 Snowflake is the `system of analysis`.
+
+**Status: Planned** (schema + synthetic loads not yet shipped in-repo).
 
 Planned analytical datasets include:
 
@@ -294,7 +328,7 @@ Planned analytical datasets include:
 
 Raw historical telemetry belongs in Snowflake rather than Salesforce.
 
-## Product Usage
+## Product Usage — Planned
 
 Product usage should eventually be captured at location level where applicable.
 
@@ -318,7 +352,7 @@ Support cases may be:
 
 Support activity contributes evidence but does not itself automatically trigger a commercial recommendation.
 
-## Signals
+## Signals — Planned
 
 Signals are deterministic.
 
@@ -349,7 +383,7 @@ Aggregation may eventually consider:
 - entitlement coverage,
 - geographic concentration.
 
-## AI Recommendations
+## AI Recommendations — Planned
 
 AI recommendations may exist at two scopes.
 
@@ -499,7 +533,7 @@ These are planned, not necessarily implemented.
 
 Current order:
 
-1. Salesforce customer hierarchy and Contacts
+1. Salesforce customer hierarchy (**Account model implemented**; Contacts next) and remaining CRM objects
 2. Snowflake schema + synthetic data
 3. deterministic signal engine
 4. hierarchy aggregation

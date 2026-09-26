@@ -290,6 +290,7 @@ Precision and seller trust matter more than recommendation volume.
 | Area | Status |
 |------|--------|
 | Repository structure + architecture docs | **Implemented** |
+| FieldPilot Salesforce Account model (docs + org fields) | **Implemented** |
 | FastAPI `/health` skeleton | **Implemented** |
 | Batch entrypoint placeholder | **Implemented** (prints not-yet-available) |
 | Signal engine documentation stub | **Implemented** (no rules) |
@@ -297,7 +298,7 @@ Precision and seller trust matter more than recommendation volume.
 | Snowflake DDL / synthetic data | **Planned** |
 | Deterministic signal rules + aggregation | **Planned** |
 | LLM / RAG recommendation layer | **Planned** |
-| Salesforce metadata + API sync | **Planned** |
+| Salesforce metadata in `force-app/` + API sync | **Planned** |
 | Docker + Azure deployment | **Planned** |
 | Demo UI | **Planned** |
 
@@ -322,10 +323,10 @@ python -m batch.run    # placeholder until batch is implemented
 
 ## Status / roadmap
 
-**Current phase:** Architecture + Salesforce / Snowflake data modeling
+**Current phase:** Architecture + Salesforce Account model (implemented) / Snowflake modeling next
 
-- [ ] Salesforce data model
-- [ ] Customer / location hierarchy
+- [x] Salesforce Account hierarchy + FieldPilot Account fields (Type, ParentId, custom/repurposed fields)
+- [ ] Salesforce Contacts / remaining CRM objects
 - [ ] Synthetic Snowflake dataset
 - [ ] Support dataset
 - [ ] Entitlement snapshot
@@ -333,7 +334,7 @@ python -m batch.run    # placeholder until batch is implemented
 - [ ] Hierarchy aggregation
 - [ ] AI structured recommendation
 - [ ] RAG
-- [ ] Salesforce integration
+- [ ] Salesforce integration (signals / AI recommendation writeback)
 - [ ] Evaluation framework
 - [ ] Docker
 - [ ] Azure deployment
@@ -362,8 +363,9 @@ python -m batch.run    # placeholder until batch is implemented
 
 | Doc | Topic |
 |-----|-------|
+| [docs/project-context.md](docs/project-context.md) | Authoritative FieldPilot context + **implemented** Account model |
 | [docs/architecture.md](docs/architecture.md) | End-to-end system design |
-| [docs/data-model.md](docs/data-model.md) | Snowflake + Salesforce models |
+| [docs/data-model.md](docs/data-model.md) | Snowflake (planned) + Salesforce Account (implemented) / other objects (planned) |
 | [docs/signal-design.md](docs/signal-design.md) | Fact → signal → hypothesis |
 | [docs/recommendation-design.md](docs/recommendation-design.md) | Location vs customer recommendations |
 | [docs/hierarchy-and-aggregation.md](docs/hierarchy-and-aggregation.md) | Branch-aware aggregation |
@@ -372,6 +374,8 @@ python -m batch.run    # placeholder until batch is implemented
 | [docs/success-metrics.md](docs/success-metrics.md) | Three measurement layers |
 | [docs/security.md](docs/security.md) | Secrets, auth, least privilege |
 | [docs/design-decisions.md](docs/design-decisions.md) | ADR-style decisions |
+| [salesforce/README.md](salesforce/README.md) | Salesforce package status |
+| [AGENTS.md](AGENTS.md) | Agent instructions |
 
 ---
 

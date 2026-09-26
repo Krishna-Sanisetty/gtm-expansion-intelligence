@@ -6,14 +6,16 @@ Analytical model in Snowflake; commercial authority in Salesforce. This document
 
 ## Hierarchy
 
-| Level | Meaning |
-|-------|---------|
-| **CUSTOMER / BUSINESS** | Parent commercial entity. Primary Salesforce Account. Opportunities live here. |
-| **LOCATION / BRANCH** | Operating location under the customer. Product usage, support, and entitlements may differ. |
+| Level | Meaning | Salesforce |
+|-------|---------|------------|
+| **CUSTOMER / BUSINESS** | Parent commercial entity. Opportunities live here. | `Account.Type = Business`; `Customer_Id__c`; `NumberofLocations__c`; primarily `Customer_ARR__c` |
+| **LOCATION / BRANCH** | Operating location under the customer. Product usage, support, and entitlements may differ. | `Account.Type = Location`; `Account.ParentId` → Business; `Location_Id__c`; `Revenue_Weight__c`; `Location_Status__c` |
 
-Do not flatten location telemetry into a single account average too early.
+Hierarchy link: standard `Account.ParentId` (Location → Business). Do not flatten location telemetry into a single account average too early.
 
 **Preserve local evidence. Make commercial decisions at the right business level.**
+
+Authoritative FieldPilot Account field detail: [project-context.md](project-context.md).
 
 ---
 
@@ -130,27 +132,39 @@ Analytical copy of Salesforce commercial context. Salesforce remains system of r
 
 ---
 
-## Salesforce objects (planned)
+## Salesforce objects
 
 ### Standard objects
 
 Account, Contact, Product2, Asset, Contract, Opportunity, Quote, Order.
 
-Parent Account = customer/business. Child Account (or equivalent) = location/branch.
+- Business Account (`Account.Type = Business`) = commercial customer / buying entity.
+- Location Account (`Account.Type = Location`) = operating branch, linked via `Account.ParentId`.
+- Opportunities belong on the Business Account only.
+- Record type for FieldPilot sample Accounts: `Field_Pilot` (`012g7000004KDoPAAW`).
 
-### Planned Account fields
+### Implemented Account fields
 
-| Field | Notes |
-|-------|-------|
-| `Customer_ID__c` | Text, Unique, External ID |
-| `Customer_Segment__c` | |
-| `Service_Vertical__c` | |
-| `Technician_Count__c` | |
-| `Branch_Count__c` | |
-| `Customer_ARR__c` | |
-| `Customer_Health_Score__c` | |
-| `Platform_Go_Live_Date__c` | |
-| `Customer_Status__c` | |
+**Status: Implemented.** See [project-context.md](project-context.md) for full definitions. Do not use the superseded names `Account_Scope__c`, `Branch_Count__c`, `Customer_Segment__c`, or `Service_Vertical__c`.
+
+| Field | Scope | Notes |
+|-------|-------|-------|
+| `Account.Type` | Business / Location / Other | Replaces planned `Account_Scope__c` |
+| `Account.ParentId` | Location → Business | Standard hierarchy |
+| `Customer_Id__c` | Business only | Text(50), External ID; e.g. `FP-CUST-1001` |
+| `Location_Id__c` | Location only | Text(50), External ID; e.g. `FP-LOC-2001` |
+| `Segment__c` | Business and Location | SMB \| Mid-Market \| Enterprise (replaces `Customer_Segment__c`) |
+| `Service_Verticals__c` | Business and Location | Multi-select (replaces `Service_Vertical__c`) |
+| `Platform_Go_Live_Date__c` | primarily Business | Date |
+| `Customer_Status__c` | primarily Business | Prospect \| Onboarding \| Active \| At Risk \| Churned |
+| `Technician_Count__c` | Business and Location | Number(8,0); Business = sum of locations in synthetic data |
+| `Customer_ARR__c` | primarily Business | Currency(16,2) |
+| `Revenue_Weight__c` | Location only | Percent(5,2); ~100% per Business |
+| `Customer_Health_Score__c` | supporting context | Number(3,0) 0–100; not authoritative evidence |
+| `Location_Status__c` | Location | Active / Opening in synthetic data; non-active excluded from aggregation assumptions |
+| `NumberofLocations__c` | Business | Number(3,0); repurposed standard field (replaces `Branch_Count__c`) |
+
+Synthetic seed: **10 Business + 50 Location** Accounts.
 
 ### Planned Product2 / Asset / Opportunity fields
 

@@ -6,6 +6,24 @@ Multi-location customers are the hard case. Flattening too early destroys truth.
 
 ---
 
+## Salesforce hierarchy (implemented)
+
+| Role | How it is modeled |
+|------|-------------------|
+| Business (parent) | `Account.Type = Business`; `Customer_Id__c`; `NumberofLocations__c`; primarily `Customer_ARR__c` |
+| Location (child) | `Account.Type = Location`; `Account.ParentId` → Business; `Location_Id__c`; `Revenue_Weight__c`; `Location_Status__c` |
+
+Rules:
+
+- Commercial Opportunities are created at the **Business** Account only.
+- Location recommendations remain supporting evidence; they are not commercially actionable by default.
+- Aggregation should respect `Revenue_Weight__c` and exclude non-active `Location_Status__c` values (synthetic data uses Active / Opening; Opening is treated as non-active for aggregation assumptions).
+- Do not put `Customer_Id__c` on Location or `Revenue_Weight__c` on Business.
+
+Authoritative field list: [project-context.md](project-context.md).
+
+---
+
 ## Why branch-aware analysis matters
 
 A parent customer can appear healthy while one location is struggling.
@@ -47,15 +65,15 @@ Recommendations should distinguish:
 
 ## Aggregation dimensions (planned)
 
-Do not aggregate only by branch count. Future aggregation should support:
+Do not aggregate only by location count (`NumberofLocations__c`). Future aggregation should support:
 
 - affected location count
-- total location count
+- total location count (`NumberofLocations__c` at Business)
 - percentage of locations affected
 - severity distribution
 - trend duration
-- revenue-weighted impact
-- technician-weighted impact
+- revenue-weighted impact (`Revenue_Weight__c`)
+- technician-weighted impact (`Technician_Count__c`)
 - operational importance
 - product entitlement coverage
 - geographic clustering
@@ -71,7 +89,7 @@ Evidence: 6 of 12 locations affected, representing 72% of trailing revenue.
 
 ## Commercial action level
 
-Commercial Opportunities are created at the **CUSTOMER / BUSINESS** (parent Account) level — never by flattening location telemetry into an Opportunity without human review of a Customer recommendation.
+Commercial Opportunities are created at the **CUSTOMER / BUSINESS** (parent Account, `Account.Type = Business`) level — never by flattening location telemetry into an Opportunity without human review of a Customer recommendation.
 
 Location recommendations remain supporting evidence in the review UI.
 
@@ -79,6 +97,7 @@ Location recommendations remain supporting evidence in the review UI.
 
 ## Related docs
 
+- [project-context.md](project-context.md)
 - [signal-design.md](signal-design.md)
 - [recommendation-design.md](recommendation-design.md)
 - [data-model.md](data-model.md)
