@@ -1,13 +1,12 @@
 # GTM Expansion Intelligence
 
+This project explores how a vertical SaaS company can identify better post-sales expansion opportunities across its existing customer base by combining product usage, support activity, contract context, and CRM data.
+
 **A seller shouldn’t have to open five systems and manually study hundreds of accounts to figure out who needs help next.**
 
-Product usage knows how the customer is behaving.
-
-Support knows where the customer is struggling.
-
-CRM knows what they own.
-
+Product usage knows how the customer is behaving.  
+Support knows where the customer is struggling.  
+CRM knows what they own.  
 Contracts know where they are commercially.
 
 And there is another complication: one “customer” may actually be 20 operating locations behaving very differently.
@@ -16,12 +15,9 @@ A parent account can look healthy while one branch is struggling. One noisy bran
 
 This project explores a different approach:
 
-Preserve the evidence at the location level.
-
-Derive reliable signals with deterministic logic.
-
-Aggregate them at the right business level.
-
+Preserve the evidence at the location level.  
+Derive reliable signals with deterministic logic.  
+Aggregate them at the right business level.  
 Then use AI where it adds value — understanding context, forming a hypothesis, and helping the seller decide what to do next.
 
 `Raw evidence → location signals → business intelligence → AI reasoning → human decision → GTM action`
