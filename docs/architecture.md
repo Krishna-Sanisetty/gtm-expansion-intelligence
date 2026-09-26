@@ -25,7 +25,7 @@ Pipeline mnemonic:
 |--------|---------------------|
 | Operational / product systems | Location-level product telemetry (leads, response time, conversion, jobs, memberships, …) |
 | Customer support | Cases, categories, priority, resolution time, CSAT, summaries |
-| Salesforce | Commercial hierarchy, entitlements, Opportunities, Quotes, Orders, Contracts, Assets |
+| Salesforce | Commercial hierarchy, Product2 catalog, `Product_Entitlement__c`, Opportunities; Quote / Order / Contract / Asset deferred for full RLM |
 | Product documentation (planned RAG corpus) | What products do, eligibility, limitations, relationships |
 
 Sellers cannot manually reconcile these for hundreds of accounts. The architecture keeps each system in its lane.
@@ -39,7 +39,7 @@ Snowflake stores analytical snapshots and high-volume history:
 - customer and location hierarchy
 - product usage facts
 - support case facts
-- entitlement snapshots (analytical copy)
+- entitlement snapshots (analytical copy of Salesforce `Product_Entitlement__c` + Product2)
 - recommendation outcomes
 - pipeline / watermark state
 
@@ -56,12 +56,15 @@ Salesforce receives actionable intelligence, not raw telemetry:
 - Business Account (`Account.Type = Business`) = commercial customer / buying entity
 - Location Account (`Account.Type = Location`) = branch / location, linked with `Account.ParentId`
 - Opportunities belong on the Business Account only
-- Account model fields are **implemented** (see [project-context.md](project-context.md)); custom objects `Account_Signal__c` and `AI_Recommendation__c` remain **planned**
-- Standard commercial objects: Opportunity, Quote, Order, Contract, Asset, Product2
+- Account model fields are **implemented** (see [project-context.md](project-context.md))
+- Product2 + `External_Product_Code__c` and `Product_Entitlement__c` are **implemented** (current entitlement source; Business or Location scope)
+- Custom objects `Account_Signal__c` and `AI_Recommendation__c` remain **planned**
+- Quote / Order / Contract / Asset / full Revenue Cloud (RLM) are **deferred** — not required for the current intelligence MVP
 
 Only **Customer**-scoped recommendations are eligible to create Opportunities after human acceptance.
 
 Do **not** store high-volume raw product telemetry in Salesforce.
+Do **not** assume parent-level entitlement automatically enables every Location.
 
 ---
 

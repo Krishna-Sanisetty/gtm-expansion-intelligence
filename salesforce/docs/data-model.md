@@ -1,6 +1,6 @@
 # Salesforce data model (FieldPilot)
 
-Primary source of truth for Account fields: [docs/project-context.md](../../docs/project-context.md).
+Primary source of truth for Account, Product, and entitlement fields: [docs/project-context.md](../../docs/project-context.md).
 
 This file summarizes the CRM-facing model for work under `salesforce/`.
 
@@ -20,6 +20,7 @@ Business Account (Type = Business)
 | Hierarchy | `Account.ParentId` Location → Business |
 | Opportunities | Business Account only |
 | Synthetic volume | 10 Business + 50 Location |
+| Contacts | Seed data implemented in org |
 
 ### Business fields
 
@@ -61,14 +62,65 @@ Business Account (Type = Business)
 
 ---
 
-## Planned — other CRM objects
+## Implemented — Product catalog and entitlements
 
-| Object | Intent |
-|--------|--------|
-| Contact | People on Business / Location Accounts |
-| Product2 / Asset / Contract | Entitlements and commercial coverage |
-| Opportunity | Expansion (and other motions) at Business only; AI linkage fields planned |
-| `Account_Signal__c` | Synced deterministic signals for sellers |
-| `AI_Recommendation__c` | Draft recommendations for human review |
+```text
+Product2
+    |
+    v
+Product_Entitlement__c
+    |
+    +---- Account (Business)
+    |
+    +---- Account (Location)
+```
+
+`Product_Entitlement__c` is the **current** entitlement / product-adoption source for the intelligence MVP. It connects Account + Product2.
+
+Do **not** treat Asset or Contract as the current entitlement source.
+
+### Product2
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `External_Product_Code__c` | Text(50), External ID | Cross-system product key (e.g. planned codes `FP-CORE`, `FP-CC`, …) |
+
+Product2 **seed records** are planned next — catalog field/model is implemented; do not assume rows are loaded unless confirmed.
+
+### Product_Entitlement__c
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `Account__c` | Lookup(Account) | Business or Location scope |
+| `Product__c` | Lookup(Product2) | Entitled product |
+| `Entitlement_Status__c` | Picklist | Active \| Planned \| Suspended |
+| `Start_Date__c` | Date | |
+| `End_Date__c` | Date | Optional |
+| `Annualized_Value__c` | Currency | Optional |
+| `Licensed_Quantity__c` | Number | Optional |
+| `External_Entitlement_Id__c` | Text(50), External ID | Cross-system entitlement key |
+
+**Scope rules:**
+
+- Entitlements may exist at Business or Location level.
+- Do not assume Business entitlement means every Location is enabled.
+- Only Active entitlements generally count as current coverage unless future logic says otherwise.
+
+Entitlement **seed records** are planned next.
+
+**Deferred:** Quote / Order / Contract / Asset / full Revenue Cloud (RLM) as the entitlement lifecycle. The lightweight model may later map to those objects if the project expands.
+
+Full narrative and recommendation implications: [docs/project-context.md](../../docs/project-context.md).
+
+---
+
+## Planned / deferred — other CRM objects
+
+| Object | Status | Intent |
+|--------|--------|--------|
+| Opportunity | Planned | Expansion (and other motions) at Business only; AI linkage fields planned |
+| `Account_Signal__c` | Planned | Synced deterministic signals for sellers |
+| `AI_Recommendation__c` | Planned | Draft recommendations for human review |
+| Quote, Order, Contract, Asset | Deferred | Full commercial / RLM lifecycle — not required for current MVP |
 
 Planned Opportunity / recommendation field sketches remain in [docs/data-model.md](../../docs/data-model.md).

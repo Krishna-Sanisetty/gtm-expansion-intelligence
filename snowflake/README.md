@@ -14,13 +14,13 @@ Store analytical copies of:
 - customer / location hierarchy
 - product telemetry
 - support facts
-- entitlement snapshots
+- entitlement snapshots (planned source: Salesforce `Product_Entitlement__c` + Product2 — not Asset / Contract for the current MVP)
 - recommendation outcomes
 - pipeline / watermark state
 
 High-volume historical telemetry does **not** belong in Salesforce.
 
-Salesforce remains authoritative for commercial objects.
+Salesforce remains authoritative for commercial and entitlement state.
 
 ## Layout
 

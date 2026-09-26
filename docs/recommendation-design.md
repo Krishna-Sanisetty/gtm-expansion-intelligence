@@ -25,6 +25,48 @@ Only Customer-scoped recommendations create Opportunities.
 
 ---
 
+## Entitlement-aware recommendation logic (planned)
+
+Before recommending a product, the system should eventually evaluate:
+
+1. Is the product already entitled?
+2. At what scope (Business vs Location)?
+3. Is deployment partial?
+4. Are affected locations already covered?
+5. Is the appropriate action:
+   - new product,
+   - additional locations,
+   - business-wide rollout,
+   - or `NO_ACTION`?
+
+Current entitlement source of truth in Salesforce: `Product_Entitlement__c` + Product2 (see [project-context.md](project-context.md)). Do not assume Asset / Contract for the current MVP.
+
+### Planned domain concept: `entitlement_state`
+
+These are analytical / recommendation domain concepts — **not** Salesforce fields unless explicitly requested later.
+
+| Value | Meaning |
+|-------|---------|
+| `NOT_OWNED` | Product is not active anywhere relevant in the customer hierarchy |
+| `PARTIALLY_DEPLOYED` | Product is active for some locations but not others |
+| `BUSINESS_WIDE` | Product is active across all relevant / eligible locations |
+
+Implication examples:
+
+- `NOT_OWNED` + strong operational evidence → potential new product expansion.
+- `PARTIALLY_DEPLOYED` + affected locations lack coverage → expand rollout to those locations (not a naive “sell the product again”).
+- `BUSINESS_WIDE` → generally do not recommend the same product merely because operational signals exist; prefer `NO_ACTION` or a different motion.
+
+Example:
+
+Summit Comfort Group — 12 locations. Contact Center Active in Austin and Dallas; Houston and San Antonio not entitled. Houston and San Antonio show demand / response / conversion pressure.
+
+Prefer: “Expand Contact Center to Houston and San Antonio” (`CUSTOMER`, `MULTI_LOCATION`) over “Sell Contact Center.”
+
+Do not assume Business-level entitlement automatically covers every Location.
+
+---
+
 ## Rollout scope (customer recommendations)
 
 | Value | Meaning |
@@ -47,6 +89,7 @@ Mark as **planned** until implemented:
 | recommended product | What to evaluate |
 | recommendation scope | LOCATION / CUSTOMER |
 | rollout scope | See above |
+| entitlement state | NOT_OWNED / PARTIALLY_DEPLOYED / BUSINESS_WIDE (domain concept) |
 | confidence | Model confidence (not a substitute for evidence) |
 | affected locations | Explicit list |
 | evidence | Structured facts / signals |
@@ -67,7 +110,7 @@ Customer recommendations may be actionable when:
 
 - evidence is sufficient,
 - rollout scope is not `NO_ACTION`,
-- entitlement / eligibility context supports the motion.
+- entitlement / eligibility context supports the motion (coverage checked against `Product_Entitlement__c`).
 
 ---
 

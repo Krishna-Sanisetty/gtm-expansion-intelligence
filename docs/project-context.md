@@ -68,17 +68,23 @@ Salesforce is the seller-facing `system of action`.
 
 Do not store high-volume raw telemetry in Salesforce.
 
-Salesforce will eventually contain:
+Salesforce currently contains (implemented):
 
-- customer/account hierarchy,
+- Business and Location Accounts,
 - Contacts,
-- Products,
-- product/commercial context,
+- Product2 (product catalog),
+- Product_Entitlement__c (lightweight entitlement / product-adoption context),
+- and the Account hierarchy model documented below.
+
+Salesforce will eventually also contain:
+
 - Account Signals,
 - AI Recommendations,
 - seller feedback,
 - Opportunities,
-- and commercial lifecycle records where practical.
+- and (deferred) full commercial lifecycle records (Quote / Order / Contract / Asset / RLM) if the project expands.
+
+Salesforce remains authoritative for current entitlement state.
 
 ## Salesforce Account Model — Implemented
 
@@ -286,6 +292,7 @@ Current seed dataset contains:
 
 - 10 Business Accounts
 - 50 Location Accounts
+- Contact seed data (implemented in the org)
 
 The dataset intentionally includes:
 
@@ -310,6 +317,153 @@ Seed files:
 
 If these files are not stored in the repository, do not assume they are available locally.
 
+Product2 catalog seed records and Product_Entitlement__c seed records are **planned / next** — do not mark those data loads complete unless they are actually present.
+
+## Implemented Product & Entitlement Model
+
+**Status: Implemented** (FieldPilot org — object/field model created manually). This section is authoritative for the current product catalog and entitlement source. Do not reintroduce Asset / Contract / Quote / Order / Revenue Cloud as required for the current MVP.
+
+### Why this model exists
+
+The project originally considered full Salesforce Revenue Cloud / RLM objects (Quote, Order, Contract, Asset). Implementing the complete commercial lifecycle adds substantial complexity that is not necessary to validate the core GTM intelligence use case.
+
+The current MVP therefore uses:
+
+`Product2` + `Product_Entitlement__c`
+
+to answer:
+
+- What products does the customer currently use?
+- Which products are missing?
+- Is a product deployed business-wide or only at selected locations?
+- Which affected locations do not have the recommended product?
+- Is the recommendation a new product sale or an expansion of an existing deployment?
+
+Full quoting / contracting / ordering remains a **deferred / future** enhancement. Do not treat RLM as a prerequisite for the current project.
+
+### Product2 (Implemented)
+
+Standard Salesforce product catalog.
+
+#### External_Product_Code__c
+
+Type:
+Text(50), External ID
+
+Purpose:
+Stable product identifier across Salesforce, Snowflake, Python services, RAG/product knowledge, and synthetic seed data.
+
+Planned FieldPilot product codes (fictional / synthetic — do not imply affiliation with any real vendor):
+
+| Code | Product |
+|------|---------|
+| `FP-CORE` | Core CRM & FSM |
+| `FP-DISP` | Advanced Dispatch |
+| `FP-CC` | Contact Center |
+| `FP-MKT` | Marketing Automation |
+| `FP-FS` | Field Sales |
+| `FP-MEM` | Memberships |
+| `FP-PAY` | Payments |
+| `FP-REV` | Revenue Intelligence |
+
+Product2 **seed records** for these codes are planned next work — the field and catalog model are implemented; do not assume catalog rows are loaded unless confirmed.
+
+### Product_Entitlement__c (Implemented)
+
+Lightweight custom object. Current source of product-adoption / entitlement context for the intelligence engine.
+
+Purpose:
+Represent which FieldPilot products are enabled / entitled for a Business or Location Account without requiring the full Revenue Cloud lifecycle.
+
+#### Implemented fields
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `Account__c` | Lookup(Account) | Business or Location Account that owns / is enabled for the product |
+| `Product__c` | Lookup(Product2) | FieldPilot product associated with the entitlement |
+| `Entitlement_Status__c` | Picklist | Current commercial/operational status |
+| `Start_Date__c` | Date | Date the entitlement became or becomes active |
+| `End_Date__c` | Date (optional) | End / expiry date where applicable |
+| `Annualized_Value__c` | Currency (optional) | Synthetic commercial value; not required for all entitlements |
+| `Licensed_Quantity__c` | Number (optional) | Synthetic licensed quantity / capacity where relevant; some products may not use a meaningful quantity |
+| `External_Entitlement_Id__c` | Text(50), External ID | Stable entitlement identifier across systems |
+
+Intended `Entitlement_Status__c` values:
+
+- `Active`
+- `Planned`
+- `Suspended`
+
+Only **Active** entitlements should generally count as currently enabled product coverage unless future business logic says otherwise.
+
+Example external ID convention (for later seed work only — do not invent actual seed IDs here):
+
+`FP-ENT-0001`
+
+#### Entitlement scope and hierarchy
+
+Entitlements may exist at either:
+
+- **Business** scope, or
+- **Location** scope
+
+Hierarchy remains Business → Location.
+
+Do **not** assume a Business-level entitlement means every child Location is enabled unless future business logic explicitly defines inheritance.
+
+Examples:
+
+Business-level:
+
+```text
+Acme Home Services → Payments → Active
+```
+
+Location-level (partial deployment):
+
+```text
+Acme - Austin  → Contact Center → Active
+Acme - Dallas  → Contact Center → Active
+Acme - Houston → Contact Center → not entitled
+```
+
+#### Coverage states (domain concepts — not Salesforce fields)
+
+The intelligence engine must eventually determine:
+
+| Concept | Meaning | Typical recommendation implication |
+|---------|---------|-----------------------------------|
+| `NOT_OWNED` | Product is not active anywhere relevant in the customer hierarchy | New product expansion |
+| `PARTIALLY_DEPLOYED` | Product is active for some locations but not others | Expand rollout to additional locations |
+| `BUSINESS_WIDE` | Product is active across all relevant/eligible locations | Do not recommend the same product merely because operational signals exist |
+
+These are analytical / recommendation domain concepts. Do not create Salesforce fields for them unless explicitly requested later.
+
+#### Entitlement-aware recommendations
+
+The AI recommendation layer must not recommend a product without checking entitlement coverage.
+
+Example:
+
+Business: Summit Comfort Group (12 locations)
+
+Contact Center entitlements: Austin Active, Dallas Active; Houston and San Antonio not entitled.
+
+Operational evidence: Houston and San Antonio show growing inbound demand, worsening response time, declining conversion.
+
+Correct interpretation is not merely “Sell Contact Center.” It may instead be:
+
+“Expand Contact Center to Houston and San Antonio.”
+
+Customer-level recommendation shape:
+
+- Recommendation Scope: `CUSTOMER`
+- Rollout Scope: `MULTI_LOCATION`
+- Affected / recommended locations: Houston, San Antonio
+- Commercial action: one parent-level Expansion Opportunity after human approval
+
+Location-level intelligence remains supporting evidence.
+
 ## Snowflake Role — Planned
 
 Snowflake is the `system of analysis`.
@@ -327,6 +481,31 @@ Planned analytical datasets include:
 - pipeline_state.
 
 Raw historical telemetry belongs in Snowflake rather than Salesforce.
+
+### Planned entitlement_snapshot source
+
+Planned Snowflake `entitlement_snapshot` should be sourced from Salesforce:
+
+`Product_Entitlement__c` + `Product2`
+
+not from Asset / Contract.
+
+Salesforce remains authoritative for current entitlement state. Snowflake may hold a replicated analytical snapshot for efficient batch analysis.
+
+Planned analytical fields may include:
+
+- `customer_id`
+- `location_id`
+- `external_entitlement_id`
+- `product_code`
+- `entitlement_status`
+- `start_date`
+- `end_date`
+- `annualized_value`
+- `licensed_quantity`
+- `snapshot_date`
+
+Do not implement the table in this documentation task unless it already exists.
 
 ## Product Usage — Planned
 
@@ -531,13 +710,26 @@ These are planned, not necessarily implemented.
 
 ## Current Development Priority
 
-Current order:
+Salesforce foundation now includes:
 
-1. Salesforce customer hierarchy (**Account model implemented**; Contacts next) and remaining CRM objects
-2. Snowflake schema + synthetic data
+1. Account hierarchy (**implemented**)
+2. Contacts (**implemented**)
+3. Product catalog model — Product2 + `External_Product_Code__c` (**implemented**)
+4. Product entitlement model — `Product_Entitlement__c` (**implemented**)
+
+Next major data / modeling work (planned — not complete unless confirmed):
+
+- Product2 seed records
+- Product_Entitlement__c seed records
+- Snowflake analytical schema / synthetic telemetry / support data
+
+Broader delivery order:
+
+1. Product2 + entitlement seed data (next)
+2. Snowflake schema + synthetic telemetry / support data
 3. deterministic signal engine
-4. hierarchy aggregation
-5. AI structured recommendations
+4. hierarchy aggregation (including entitlement coverage)
+5. AI structured recommendations (entitlement-aware)
 6. RAG
 7. Salesforce recommendation writeback
 8. human approval / Opportunity action
@@ -545,4 +737,4 @@ Current order:
 10. Docker / Azure deployment
 11. demo UI
 
-Quoting / contracting / full Revenue Cloud implementation is intentionally deferred because it is not required to validate the core intelligence use case.
+**Deferred:** complete RLM quoting / ordering / contracting lifecycle (Quote → Order → Contract → Asset). Not required to validate the core intelligence use case.
