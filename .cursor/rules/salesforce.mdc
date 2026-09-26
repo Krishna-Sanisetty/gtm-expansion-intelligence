@@ -37,6 +37,21 @@ Before any Salesforce change, read `docs/project-context.md` and treat it as the
 - Do not redesign the Account hierarchy without explicitly updating `docs/project-context.md` in the same change
 - Avoid unnecessary Revenue Cloud complexity until the core intelligence pipeline is operational
 
+## Implemented field names (authoritative)
+
+| Use these | Do not recreate |
+|-----------|-----------------|
+| `Account.Type` (Business / Location / Other) | `Account_Scope__c` |
+| `NumberofLocations__c` | `Branch_Count__c` |
+| `Segment__c` | `Customer_Segment__c` |
+| `Service_Verticals__c` (multi-select) | `Service_Vertical__c` |
+| `Customer_Id__c` (Business only) | putting Customer Id on Location |
+| `Location_Id__c` (Location only) | putting Location Id on Business |
+| `Revenue_Weight__c` (Location only) | putting Revenue Weight on Business |
+| `Customer_ARR__c` (primarily Business) | inventing authoritative Location ARR |
+
+Full definitions: `docs/project-context.md`.
+
 ## Source control and secrets
 
 - Salesforce metadata must remain source-controlled under `salesforce/`

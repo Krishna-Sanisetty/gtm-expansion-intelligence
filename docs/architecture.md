@@ -53,12 +53,15 @@ See [data-model.md](data-model.md).
 
 Salesforce receives actionable intelligence, not raw telemetry:
 
-- Parent Account = commercial customer / buying entity
-- Child Account (or equivalent location entity) = branch / location
-- Planned custom objects: `Account_Signal__c`, `AI_Recommendation__c`
+- Business Account (`Account.Type = Business`) = commercial customer / buying entity
+- Location Account (`Account.Type = Location`) = branch / location, linked with `Account.ParentId`
+- Opportunities belong on the Business Account only
+- Account model fields are **implemented** (see [project-context.md](project-context.md)); custom objects `Account_Signal__c` and `AI_Recommendation__c` remain **planned**
 - Standard commercial objects: Opportunity, Quote, Order, Contract, Asset, Product2
 
 Only **Customer**-scoped recommendations are eligible to create Opportunities after human acceptance.
+
+Do **not** store high-volume raw product telemetry in Salesforce.
 
 ---
 

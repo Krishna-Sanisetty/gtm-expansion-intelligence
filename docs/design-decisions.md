@@ -152,6 +152,80 @@ Architecture Decision Records for the foundation of GTM Expansion Intelligence.
 
 ---
 
+## ADR 13 — Account scope uses standard `Account.Type`
+
+**Status:** Accepted (supersedes planned `Account_Scope__c`)
+
+**Context:** Early scaffold docs planned a custom `Account_Scope__c` to distinguish Business vs Location Accounts.
+
+**Decision:** Use standard `Account.Type` with picklist values `Business`, `Location`, and `Other`. FieldPilot sample Accounts use record type `Field_Pilot`.
+
+**Consequences:** Docs and agents must not recreate `Account_Scope__c`. Hierarchy semantics are carried by Type + `ParentId`.
+
+---
+
+## ADR 14 — Business → Location hierarchy via `Account.ParentId`
+
+**Status:** Accepted
+
+**Context:** Multi-location customers need a first-class parent/child Account relationship without inventing a custom hierarchy object.
+
+**Decision:** Location Accounts point to their Business parent with standard `Account.ParentId`. Opportunities are created only on the Business Account.
+
+**Consequences:** Location recommendations stay supporting evidence; commercial action stays at the buying entity.
+
+---
+
+## ADR 15 — Location count uses `NumberofLocations__c`
+
+**Status:** Accepted (supersedes planned `Branch_Count__c`)
+
+**Context:** Scaffold docs planned a custom `Branch_Count__c` for Business location counts.
+
+**Decision:** Repurpose existing Salesforce `NumberofLocations__c` (Number(3,0)) at the Business level.
+
+**Consequences:** Do not introduce `Branch_Count__c`. Aggregation docs refer to `NumberofLocations__c`.
+
+---
+
+## ADR 16 — Separate external IDs for Business and Location
+
+**Status:** Accepted
+
+**Context:** Business and Location need stable external keys for seed loads and Snowflake joins without sharing one Customer ID across scopes.
+
+**Decision:** `Customer_Id__c` (Text(50), External ID) on Business only (e.g. `FP-CUST-1001`); `Location_Id__c` (Text(50), External ID) on Location only (e.g. `FP-LOC-2001`).
+
+**Consequences:** Do not populate `Customer_Id__c` on Location or `Location_Id__c` on Business unless the model is intentionally revised.
+
+---
+
+## ADR 17 — ARR at Business; revenue weight at Location
+
+**Status:** Accepted
+
+**Context:** Branch-level ARR is rarely authoritative; aggregation still needs location commercial significance.
+
+**Decision:** `Customer_ARR__c` is primarily Business-level. `Revenue_Weight__c` (Percent) is Location-level and should total ~100% per Business. Non-active `Location_Status__c` values are excluded from aggregation assumptions.
+
+**Consequences:** Do not invent authoritative Location ARR or put `Revenue_Weight__c` on Business.
+
+---
+
+## ADR 18 — Service verticals are multi-select
+
+**Status:** Accepted (supersedes planned `Service_Vertical__c`)
+
+**Context:** FieldPilot customers may operate multiple trades; a single-select vertical understates reality.
+
+**Decision:** Use `Service_Verticals__c` multi-select (HVAC; Plumbing; Roofing; Electrical; Fencing; Multi-Trade). Segment uses `Segment__c` (SMB | Mid-Market | Enterprise), superseding planned `Customer_Segment__c`.
+
+**Consequences:** Seed CSV multi-select values use semicolon separators. Old single-select / segment field names are historical only.
+
+---
+
 ## Related principles
 
 See the twelve design principles listed in the root [README](../README.md).
+
+Authoritative Account field reference: [project-context.md](project-context.md).
