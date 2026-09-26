@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gtm-expansion-intelligence"
+version = "0.1.0"
+description = "Evidence-driven post-sales GTM intelligence using product telemetry, support signals, hierarchy-aware reasoning, and Salesforce."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+  { name = "Krishna Teja Sanisetty" },
+]
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "pydantic",
+  "pydantic-settings",
+  "httpx",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+  "backend*",
+  "batch*",
+  "signal_engine*",
+  "ai*",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+  "backend/tests",
+  "batch/tests",
+  "signal_engine/tests",
+]
+pythonpath = ["."]
