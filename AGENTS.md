@@ -24,3 +24,4 @@ Important principles:
 - Snowflake is the system of analysis.
 - Human approval is required before commercial opportunity creation.
 - Precision matters more than recommendation volume.
+- Product recommendations must be entitlement-aware; read the implemented product/entitlement model in `docs/project-context.md` before changing recommendation or Salesforce logic.

@@ -30,13 +30,15 @@ A parent customer can appear healthy while one location is struggling.
 
 A single noisy branch can also create false urgency for a business-wide expansion motion if averages hide distribution.
 
-Product adoption and entitlements often differ by location (e.g. Contact Center ACTIVE in Austin and Dallas, NOT ENABLED in Houston, San Antonio, Waco).
+Product adoption and entitlements often differ by location (e.g. Contact Center Active in Austin and Dallas, not entitled in Houston, San Antonio, Waco).
+
+Current entitlement source: Salesforce `Product_Entitlement__c` (Business or Location scope). Do not assume Business entitlement means every Location is enabled.
 
 Recommendations should distinguish:
 
-- product not owned
-- partially deployed
-- fully deployed
+- product not owned (`NOT_OWNED`)
+- partially deployed (`PARTIALLY_DEPLOYED`)
+- business-wide / fully deployed (`BUSINESS_WIDE`)
 
 “Expand Contact Center to additional locations” is different from “Sell Contact Center.”
 
@@ -47,8 +49,9 @@ Recommendations should distinguish:
 1. Preserve and score **location-level** evidence
 2. Emit location signals / insights
 3. Aggregate to **customer-level** signals
-4. Decide commercial significance and rollout scope
-5. Only then consider Customer-scoped AI recommendation
+4. Combine with **product-coverage / entitlement** aggregation
+5. Decide commercial significance and rollout scope
+6. Only then consider Customer-scoped AI recommendation
 
 ---
 
@@ -75,17 +78,39 @@ Do not aggregate only by location count (`NumberofLocations__c`). Future aggrega
 - revenue-weighted impact (`Revenue_Weight__c`)
 - technician-weighted impact (`Technician_Count__c`)
 - operational importance
-- product entitlement coverage
+- product entitlement coverage (from `Product_Entitlement__c`)
+- location status (`Location_Status__c`)
 - geographic clustering
 
-Example customer signal:
+### Product-coverage aggregation
+
+Customer-level intelligence should eventually combine:
+
+- affected locations,
+- location severity,
+- revenue weights,
+- technician weights,
+- entitlement coverage,
+- location status.
+
+Example:
+
+```text
+8 of 12 locations affected.
+6 affected locations do not have Contact Center.
+2 affected locations already have Contact Center.
+```
+
+This should produce a more precise rollout recommendation (expand to the uncovered affected locations) than simply “recommend Contact Center.”
+
+Example customer signal (severity / weight):
 
 ```text
 WIDESPREAD_RESPONSE_DEGRADATION
 Evidence: 6 of 12 locations affected, representing 72% of trailing revenue.
 ```
 
----
+Entitlement coverage must refine product recommendations after signal aggregation — not replace operational evidence.
 
 ## Commercial action level
 

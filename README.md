@@ -1,13 +1,13 @@
 # GTM Expansion Intelligence
 
-This project explores how a vertical SaaS company can identify better post-sales expansion opportunities across its existing customer base by combining product usage, support activity, contract context, and CRM data.
+This project explores how a vertical SaaS company can identify better post-sales expansion opportunities across its existing customer base by combining product usage, support activity, entitlement coverage, and CRM data.
 
 **A seller shouldn’t have to open five systems and manually study hundreds of accounts to figure out at which customer/business they have new opportunities**
 
 - Product usage knows how the customer is behaving.  
 - Support knows where the customer is struggling.   
-- CRM knows what they own.  
-- Contracts know where they are commercially.
+- CRM knows the customer hierarchy and commercial context.  
+- Entitlements know which products are enabled (and where).
 
 And there is another complication: one “customer” may actually be operating at "N" different locations behaving very differently.
 
@@ -135,7 +135,7 @@ flowchart TB
   REC[Salesforce AI Recommendation]
   HUMAN[Human Review]
   OPP[Parent Expansion Opportunity]
-  REV[Quote / Order / Contract / Asset]
+  REV[Future RLM lifecycle - deferred]
   FB[Outcomes + Seller Feedback]
   PY[Python services]
   AZ[Azure runtime - planned]
@@ -155,7 +155,7 @@ flowchart TB
   AI --> REC
   REC --> HUMAN
   HUMAN -->|Accept Customer rec| OPP
-  OPP --> REV
+  OPP -.-> REV
   HUMAN -->|Dismiss / outcomes| FB
   FB --> SF
   PY -.-> LSE
@@ -177,7 +177,7 @@ Python calculates:
 - changes and thresholds,
 - product gaps,
 - support patterns,
-- contract timing,
+- entitlement coverage (from Salesforce `Product_Entitlement__c`),
 - location coverage,
 - weighted aggregation,
 - trend duration.
@@ -192,8 +192,8 @@ The LLM interprets those verified signals, retrieves product knowledge, forms a 
 
 | System | Role |
 |--------|------|
-| **Snowflake** | System of analysis — telemetry, support facts, hierarchy, analytical entitlement snapshots, outcomes, pipeline state |
-| **Salesforce** | System of action — Account hierarchy, Opportunities, Quotes, Orders, Contracts, Assets, AI recommendations for review |
+| **Snowflake** | System of analysis — telemetry, support facts, hierarchy, analytical entitlement snapshots (from `Product_Entitlement__c` + Product2), outcomes, pipeline state |
+| **Salesforce** | System of action — Account hierarchy, Product2, `Product_Entitlement__c`, Opportunities, AI recommendations for review; Quote / Order / Contract / Asset / RLM deferred |
 
 High-volume telemetry and historical activity do not belong in CRM.
 

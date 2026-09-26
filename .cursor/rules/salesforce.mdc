@@ -14,7 +14,7 @@ alwaysApply: false
 
 # Salesforce — FieldPilot / GTM Expansion Intelligence
 
-Before any Salesforce change, read `docs/project-context.md` and treat it as the source of truth for the Account model and hierarchy.
+Before any Salesforce or data-model change, read `docs/project-context.md` and treat it as the source of truth for Account, Product, and entitlement models.
 
 ## Record type
 
@@ -29,15 +29,27 @@ Before any Salesforce change, read `docs/project-context.md` and treat it as the
 - **Opportunities belong to the Business Account**, never to a Location by default
 - Location recommendations support evidence; they are not commercially actionable by default
 
+## Product catalog and entitlements
+
+- Product2 is the product catalog
+- `External_Product_Code__c` is the cross-system product key
+- `Product_Entitlement__c` is the current implemented entitlement model
+- Entitlements may exist at Business or Location scope
+- Do not assume parent entitlement automatically applies to all locations
+- Before recommending products, future logic must account for entitlement coverage
+- Do not introduce Asset / Contract / Quote / Order dependencies unless explicitly requested
+- Full RLM / Revenue Cloud is deferred for the current MVP
+- Do not duplicate the current entitlement model with another custom object without a documented architecture decision
+- Detailed schema: `docs/project-context.md` (do not duplicate the full field list here)
+
 ## Modeling rules
 
 - Prefer standard Salesforce functionality before introducing new custom fields or objects
 - Never introduce a custom field that duplicates a field already documented in `docs/project-context.md`
 - Do not store raw product telemetry or raw support history in Salesforce (Snowflake is the system of analysis)
-- Do not redesign the Account hierarchy without explicitly updating `docs/project-context.md` in the same change
-- Avoid unnecessary Revenue Cloud complexity until the core intelligence pipeline is operational
+- Do not redesign the Account hierarchy or entitlement model without explicitly updating `docs/project-context.md` in the same change
 
-## Implemented field names (authoritative)
+## Implemented Account field names (authoritative)
 
 | Use these | Do not recreate |
 |-----------|-----------------|

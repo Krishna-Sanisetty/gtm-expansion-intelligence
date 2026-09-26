@@ -13,7 +13,7 @@ or fake thresholds are implemented.
 - Facts before AI
 - The model cannot invent evidence
 - Preserve location-level evidence before aggregating
-- Product entitlement coverage is location-aware
+- Product entitlement coverage is location-aware (source: Salesforce `Product_Entitlement__c`; Business or Location scope)
 
 ## Layout (planned)
 

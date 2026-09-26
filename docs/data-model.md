@@ -88,20 +88,24 @@ Example metrics: `INBOUND_LEADS`, `AVG_LEAD_RESPONSE_MIN`, `LEAD_CONVERSION_RATE
 
 ### `entitlement_snapshot`
 
-Analytical copy of Salesforce commercial context. Salesforce remains system of record.
+Analytical copy of Salesforce entitlement context. Salesforce remains system of record.
+
+**Planned source:** Salesforce `Product_Entitlement__c` + `Product2` (via `External_Product_Code__c`). Not Asset / Contract for the current MVP.
 
 | Field | Notes |
 |-------|-------|
-| `customer_id` | |
-| `location_id` | Distinguishes partial vs full deployment |
-| `product_code` | |
-| `contract_id` | |
-| `contract_start_date` | |
-| `contract_end_date` | |
-| `annual_value` | |
-| `quantity` | |
-| `status` | e.g. ACTIVE, NOT ENABLED |
+| `customer_id` | Parent Business |
+| `location_id` | Distinguishes Business-scoped vs Location-scoped entitlements; supports partial vs full deployment |
+| `external_entitlement_id` | From `Product_Entitlement__c.External_Entitlement_Id__c` |
+| `product_code` | From `Product2.External_Product_Code__c` |
+| `entitlement_status` | e.g. Active, Planned, Suspended |
+| `start_date` | |
+| `end_date` | Optional |
+| `annualized_value` | Optional |
+| `licensed_quantity` | Optional |
 | `snapshot_date` | |
+
+Do not treat Snowflake as authoritative for entitlement state.
 
 ### `recommendation_outcome`
 
@@ -134,9 +138,13 @@ Analytical copy of Salesforce commercial context. Salesforce remains system of r
 
 ## Salesforce objects
 
-### Standard objects
+### Standard objects (current + deferred)
 
-Account, Contact, Product2, Asset, Contract, Opportunity, Quote, Order.
+**Implemented for current MVP foundation:** Account, Contact, Product2, `Product_Entitlement__c`.
+
+**Planned commercial action:** Opportunity (including AI linkage fields) after human approval of Customer recommendations.
+
+**Deferred commercial lifecycle (not required for current MVP):** Quote, Order, Contract, Asset, full Revenue Cloud / RLM.
 
 - Business Account (`Account.Type = Business`) = commercial customer / buying entity.
 - Location Account (`Account.Type = Location`) = operating branch, linked via `Account.ParentId`.
@@ -164,16 +172,56 @@ Account, Contact, Product2, Asset, Contract, Opportunity, Quote, Order.
 | `Location_Status__c` | Location | Active / Opening in synthetic data; non-active excluded from aggregation assumptions |
 | `NumberofLocations__c` | Business | Number(3,0); repurposed standard field (replaces `Branch_Count__c`) |
 
-Synthetic seed: **10 Business + 50 Location** Accounts.
+Synthetic seed: **10 Business + 50 Location** Accounts. Contact seed data is implemented in the org.
 
-### Planned Product2 / Asset / Opportunity fields
+### Implemented Product catalog and entitlements
+
+**Status: Implemented** (object/field model in org). Authoritative detail: [project-context.md](project-context.md).
+
+Conceptual relationships:
+
+```text
+Product2
+    |
+    v
+Product_Entitlement__c
+    |
+    +---- Account (Business)
+    |
+    +---- Account (Location)
+```
+
+`Product_Entitlement__c` is a junction / context object connecting Account + Product2.
+
+| Object / field | Status | Notes |
+|----------------|--------|-------|
+| Product2 | Implemented | Product catalog |
+| Product2.`External_Product_Code__c` | Implemented | Text(50), External ID; cross-system product key |
+| `Product_Entitlement__c` | Implemented | Current entitlement / adoption source for MVP |
+| `Account__c` | Implemented | Lookup(Account) — Business or Location |
+| `Product__c` | Implemented | Lookup(Product2) |
+| `Entitlement_Status__c` | Implemented | Active \| Planned \| Suspended |
+| `Start_Date__c` | Implemented | Date |
+| `End_Date__c` | Implemented | Date, optional |
+| `Annualized_Value__c` | Implemented | Currency, optional |
+| `Licensed_Quantity__c` | Implemented | Number, optional |
+| `External_Entitlement_Id__c` | Implemented | Text(50), External ID |
+
+**Scope behavior:**
+
+- Business Account entitlement may indicate product is commercially owned at parent level.
+- Location entitlement indicates actual location-level deployment / enablement where relevant.
+- Do **not** assume one automatically implies the other unless future business logic defines inheritance.
+- Agents must not silently assume parent-level entitlement means every child location is enabled.
+
+Product2 catalog seed rows and entitlement seed rows are **planned next** — model is implemented; data loads are not marked complete here.
+
+**Deferred:** Asset / Contract as entitlement source; Quote / Order / full RLM lifecycle.
+
+### Planned Opportunity fields
 
 | Object | Field | Notes |
 |--------|-------|-------|
-| Product2 | `External_Product_Code__c` | |
-| Asset | `External_Entitlement_ID__c` | |
-| Asset | `Licensed_Quantity__c` | |
-| Asset | `Annualized_Value__c` | |
 | Opportunity | `Opportunity_Motion__c` | New Logo, Expansion, Renewal, Reactivation |
 | Opportunity | `AI_Generated__c` | |
 | Opportunity | `AI_Recommendation_ID__c` | |

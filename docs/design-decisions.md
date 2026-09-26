@@ -56,11 +56,11 @@ Architecture Decision Records for the foundation of GTM Expansion Intelligence.
 
 **Status:** Accepted
 
-**Context:** Sellers live in CRM. Revenue lifecycle (Opportunity → Quote → Order → Contract / Asset) already exists there.
+**Context:** Sellers live in CRM. Commercial action (Opportunities) and seller review happen there. Full Quote → Order → Contract → Asset / RLM lifecycle is deferred for the current MVP.
 
-**Decision:** Sync actionable intelligence (signals, AI recommendations) to Salesforce; keep raw telemetry out.
+**Decision:** Sync actionable intelligence (signals, AI recommendations) to Salesforce; keep raw telemetry out. Current product ownership context uses Product2 + `Product_Entitlement__c` (see ADR 19).
 
-**Consequences:** Custom objects `Account_Signal__c` and `AI_Recommendation__c` are planned. Human review happens in Salesforce.
+**Consequences:** Custom objects `Account_Signal__c` and `AI_Recommendation__c` are planned. Human review happens in Salesforce. Do not treat full Revenue Cloud as a prerequisite for the intelligence MVP.
 
 ---
 
@@ -68,9 +68,9 @@ Architecture Decision Records for the foundation of GTM Expansion Intelligence.
 
 **Status:** Accepted
 
-**Context:** Entitlements and contracts affect product-gap signals, but Salesforce remains authoritative.
+**Context:** Entitlements affect product-gap signals and recommendation precision, but Salesforce remains authoritative.
 
-**Decision:** Maintain `entitlement_snapshot` (and similar) in Snowflake as analytical copies with snapshot dates.
+**Decision:** Maintain `entitlement_snapshot` (and similar) in Snowflake as analytical copies with snapshot dates, sourced from Salesforce `Product_Entitlement__c` + Product2 — not from Asset / Contract for the current MVP.
 
 **Consequences:** Batch can join usage to coverage without treating Snowflake as commercial system of record.
 
@@ -224,8 +224,40 @@ Architecture Decision Records for the foundation of GTM Expansion Intelligence.
 
 ---
 
+## ADR 19 — Lightweight entitlement model before full revenue lifecycle
+
+**Status:** Accepted
+
+**Context:** The intelligence use case needs reliable product ownership / deployment context. Full Quote → Order → Contract → Asset / Revenue Cloud (RLM) implementation adds substantial complexity not required to validate the core MVP.
+
+**Decision:** Use standard Product2 plus custom `Product_Entitlement__c` as the current entitlement model and source of product-adoption context for the intelligence engine.
+
+**Consequences:**
+
+- Product-gap detection, partial deployment detection, location-aware recommendations, and seller action can proceed without RLM.
+- Full Revenue Cloud / RLM lifecycle is **deferred**.
+- The lightweight model may later map to or be replaced by standard commercial lifecycle objects if the project expands.
+- Do not introduce Asset / Contract / Quote / Order dependencies for entitlement unless explicitly requested.
+- Do not duplicate this entitlement model with another custom object without a documented architecture decision.
+
+Authoritative field list: [project-context.md](project-context.md).
+
+---
+
+## ADR 20 — Entitlements are scope-aware
+
+**Status:** Accepted
+
+**Context:** Multi-location customers may deploy products selectively. A parent-level commercial ownership signal is not the same as every branch being enabled.
+
+**Decision:** Entitlements may exist at either Business or Location level on `Product_Entitlement__c.Account__c`. Do not assume Business entitlement means every Location is enabled unless future business logic explicitly defines inheritance.
+
+**Consequences:** Aggregation and recommendations must distinguish `NOT_OWNED`, `PARTIALLY_DEPLOYED`, and `BUSINESS_WIDE` coverage (domain concepts — not Salesforce fields unless requested later).
+
+---
+
 ## Related principles
 
 See the twelve design principles listed in the root [README](../README.md).
 
-Authoritative Account field reference: [project-context.md](project-context.md).
+Authoritative Account, Product, and entitlement field reference: [project-context.md](project-context.md).
