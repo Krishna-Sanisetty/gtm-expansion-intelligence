@@ -1,0 +1,43 @@
+---
+description: FieldPilot Salesforce conventions for GTM Expansion Intelligence
+globs:
+  - salesforce/**
+  - "**/*salesforce*"
+  - "**/*.object-meta.xml"
+  - "**/*.field-meta.xml"
+  - "**/*.object"
+  - "**/*.cls"
+  - "**/*.trigger"
+  - "**/sfdx-project.json"
+alwaysApply: false
+---
+
+# Salesforce — FieldPilot / GTM Expansion Intelligence
+
+Before any Salesforce change, read `docs/project-context.md` and treat it as the source of truth for the Account model and hierarchy.
+
+## Record type
+
+- FieldPilot Account Record Type API name: `Field_Pilot`
+- Current RecordTypeId: `012g7000004KDoPAAW`
+
+## Hierarchy
+
+- **Business Account** = commercial parent / buying entity (`Account.Type = Business`)
+- **Location Account** = operational branch (`Account.Type = Location`)
+- Connect locations with standard `Account.ParentId` (Location → Business)
+- **Opportunities belong to the Business Account**, never to a Location by default
+- Location recommendations support evidence; they are not commercially actionable by default
+
+## Modeling rules
+
+- Prefer standard Salesforce functionality before introducing new custom fields or objects
+- Never introduce a custom field that duplicates a field already documented in `docs/project-context.md`
+- Do not store raw product telemetry or raw support history in Salesforce (Snowflake is the system of analysis)
+- Do not redesign the Account hierarchy without explicitly updating `docs/project-context.md` in the same change
+- Avoid unnecessary Revenue Cloud complexity until the core intelligence pipeline is operational
+
+## Source control and secrets
+
+- Salesforce metadata must remain source-controlled under `salesforce/`
+- Never commit Salesforce auth/session information, tokens, or org credentials
