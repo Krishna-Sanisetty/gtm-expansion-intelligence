@@ -2,7 +2,7 @@
 
 This project explores how a vertical SaaS company can identify better post-sales expansion opportunities across its existing customer base by combining product usage, support activity, contract context, and CRM data.
 
-**A seller shouldn’t have to open five systems and manually study hundreds of accounts to figure out who needs help next.**
+**A seller shouldn’t have to open five systems and manually study hundreds of accounts to figure out at which customer/business they have new opportunities**
 
 Product usage knows how the customer is behaving.  
 Support knows where the customer is struggling.  
