@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Platform_Go_Live_Date__c</fullName>
+    <description>Allows tenure-based logic. A customer live for 20 days should not necessarily receive the same recommendations as one live for three years.</description>
+    <label>Platform Go-Live Date</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Date</type>
+</CustomField>
