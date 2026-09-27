@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+
+    <!-- Account fields created/reused specifically for FieldPilot -->
+    <types>
+        <members>Account.Customer_Id__c</members>
+        <members>Account.Location_Id__c</members>
+        <members>Account.Segment__c</members>
+        <members>Account.Service_Verticals__c</members>
+        <members>Account.Platform_Go_Live_Date__c</members>
+        <members>Account.Customer_Status__c</members>
+        <members>Account.Type</members>
+        <members>Account.Technician_Count__c</members>
+        <members>Account.Customer_ARR__c</members>
+        <members>Account.Revenue_Weight__c</members>
+        <members>Account.Customer_Health_Score__c</members>
+        <members>Account.Location_Status__c</members>
+        <members>Account.NumberofLocations__c</members>
+
+        <!-- Product catalog -->
+        <members>Product2.External_Product_Code__c</members>
+
+        <name>CustomField</name>
+    </types>
+
+    <!-- FieldPilot-specific Account Record Type.
+         This should also capture the Type picklist configuration
+         associated with the record type. -->
+    <types>
+        <members>Account.Field_Pilot</members>
+        <name>RecordType</name>
+    </types>
+
+    <!-- Lightweight entitlement model.
+         Retrieving the custom object brings its object definition
+         and its custom fields into source format. -->
+    <types>
+        <members>Product_Entitlement__c</members>
+        <name>CustomObject</name>
+    </types>
+
+    <version>66.0</version>
+</Package>
